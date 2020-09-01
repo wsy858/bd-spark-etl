@@ -1,13 +1,13 @@
 package evan.wang.etl
 
-import com.alibaba.fastjson.JSON
-import evan.wang.etl.reader.ReaderFactory
-import evan.wang.etl.reader.mysql.MySqlConfig
-import evan.wang.etl.writer.WriterFactory
+import java.util.concurrent.TimeUnit
+
 import evan.wang.etl.option.OptionParser
+import evan.wang.etl.reader.ReaderFactory
+import evan.wang.etl.writer.WriterFactory
+import org.apache.commons.lang3.time.StopWatch
 import org.apache.spark.sql.SparkSession
 import org.slf4j.{Logger, LoggerFactory}
-import evan.wang.etl.reader.rdb.RdbConfig
 
 /**
   * @author evan wang
@@ -17,7 +17,6 @@ import evan.wang.etl.reader.rdb.RdbConfig
 object Bootstrap {
   //日志收集器
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
 
   /**
     * @todo 创建spark session
@@ -29,10 +28,11 @@ object Bootstrap {
       .appName("bd-spark-etl")
       .master(if ("true".equals(System.getProperty("debug"))) "local[2]" else "yarn")
       .enableHiveSupport()
-      .config("spark.scheduler.mode", "FAIR") // 共享模式，平均分配资源
+      .config("spark.scheduler.mode", "FAIR")
       .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .config("spark.task.maxFailures", 10) // 任务失败重试次数
-      .config("spark.port.maxRetries", 300) // spark ui服务端口占用重试次数
+      .config("spark.port.maxRetries", 100) // spark ui服务端口占用重试次数
+      .config("spark.network.timeout", 3600) // 网络超时时间
       .config("spark.ui.port", 4044) // spark ui服务端口
       .getOrCreate()
   }
@@ -43,7 +43,8 @@ object Bootstrap {
     * @param args 输入参数
     */
   private def runJob(args: Array[String]): Int = {
-    logger.info("main args:{}", args.mkString(","))
+    val watcher: StopWatch = StopWatch.createStarted()
+    logger.info("------------任务开始-------------main args:{}", args.mkString(","))
     val options = new OptionParser(args).getOptions
     logger.info(options.toString)
     val sparkSession = newSparkSession()
@@ -51,7 +52,8 @@ object Bootstrap {
     val data = reader.readData(sparkSession, options)
     val writer = WriterFactory.getWrite(options.getWriterName)
     writer.writeData(sparkSession, options, data)
-    logger.info("------------任务结束-------------")
+    watcher.stop()
+    logger.info("------------任务结束-------------useTimes: {}s", watcher.getTime(TimeUnit.SECONDS))
     0
   }
 
@@ -66,7 +68,6 @@ object Bootstrap {
       System.exit(1)
     }
     runJob(args)
-
   }
 
 

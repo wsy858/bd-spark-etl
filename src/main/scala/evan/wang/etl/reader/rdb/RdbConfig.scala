@@ -7,6 +7,8 @@ import scala.beans.BeanProperty
   */
 class RdbConfig {
   @BeanProperty
+  var driver: String = _
+  @BeanProperty
   var jdbcUrl: String = _
   @BeanProperty
   var userName: String = _
@@ -17,9 +19,9 @@ class RdbConfig {
   @BeanProperty
   var tableName: String = _
   @BeanProperty
+  var columns: String = _
+  @BeanProperty
   var splitKey: String = _
   @BeanProperty
   var where: String = _
-
-  override def toString = s"RdbConfig($jdbcUrl, $userName, $password, $dbName, $tableName, $splitKey, $where)"
 }

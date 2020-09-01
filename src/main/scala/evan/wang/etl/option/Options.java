@@ -4,24 +4,14 @@ package evan.wang.etl.option;
  * This class define commandline options for the Launcher program
  */
 public class Options {
-    @OptionRequired(description = "Running mode")
-    private String mode;
     @OptionRequired(description = "reader name")
     private String readerName;
     @OptionRequired(description = "writer name")
     private String writerName;
-    @OptionRequired(description = "read config, format by json")
+    @OptionRequired(description = "reader config, format by json")
     private String readerConfig;
-    @OptionRequired(description = "write config, format by json")
-    private String writeConfig;
-
-    public String getMode() {
-        return mode;
-    }
-
-    public void setMode(String mode) {
-        this.mode = mode;
-    }
+    @OptionRequired(description = "writer config, format by json")
+    private String writerConfig;
 
     public String getReaderName() {
         return readerName;
@@ -47,11 +37,11 @@ public class Options {
         this.readerConfig = readerConfig;
     }
 
-    public String getWriteConfig() {
-        return writeConfig;
+    public String getWriterConfig() {
+        return writerConfig;
     }
 
-    public void setWriteConfig(String writeConfig) {
-        this.writeConfig = writeConfig;
+    public void setWriterConfig(String writerConfig) {
+        this.writerConfig = writerConfig;
     }
 }
